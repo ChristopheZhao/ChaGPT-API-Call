@@ -15,4 +15,5 @@ The dialogue is entered directly from the command line. By default, the context 
 - support mutil-turn dialogue
 
 ## dialogue show
-![image](https://user-images.githubusercontent.com/17317538/222915367-f49b5171-0461-4538-ac10-9f1a5b1938b4.png)
+![image](https://user-images.githubusercontent.com/17317538/222916920-4bf3a9bc-68de-4e3d-86b4-12881c5c6926.png)
+
