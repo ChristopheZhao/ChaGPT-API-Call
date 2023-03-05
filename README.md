@@ -10,6 +10,8 @@ This project uses python to simply implement the experience of how to call Chagp
 
 ## notice
 - You can also use the OpenAI api (https://platform.openai.com/docs/guides/chat) to call, but it is more flexible to implement it yourself through the python api request.
+![image](https://user-images.githubusercontent.com/17317538/222936144-e1b52aa2-b400-4680-a2cb-7dd7ffd99a93.png)
+
 - The dialogue is entered directly from the command line. By default, the context of the dialogue will always be accumulated. If you want to clear the context, you can directly enter 'clear' on the command line
 
 ## features
