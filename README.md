@@ -9,7 +9,9 @@ This project uses python to simply implement the experience of how to call Chagp
 3. run this command "python test.py" in your terminal,or run test.py in your ide.
 
 ## notice
-The dialogue is entered directly from the command line. By default, the context of the dialogue will always be accumulated. If you want to clear the context, you can directly enter 'clear' on the command line
+- 
+You can also use the OpenAI api (https://platform.openai.com/docs/guides/chat) to call, but it is more flexible to implement it yourself through the python api request.
+- The dialogue is entered directly from the command line. By default, the context of the dialogue will always be accumulated. If you want to clear the context, you can directly enter 'clear' on the command line
 
 ## features
 - support mutil-turn dialogue
