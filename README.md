@@ -15,7 +15,7 @@ This project uses python to simply implement the experience of how to call Chagp
   
   ![image](https://user-images.githubusercontent.com/17317538/222936144-e1b52aa2-b400-4680-a2cb-7dd7ffd99a93.png)
 - The dialogue is entered directly from the command line. By default, the context of the dialogue will always be accumulated. If you want to clear the context, you can directly enter 'clear' on the command line.
-- The recently added method of deleting the above dialogue is implemented in tools/utils.py. At present, I think there is still a lot of room for optimization in this method. I try to adjust the parameters, this set of default parameters in config.py is relatively optimal in my attempt, you can also Configure in this file.
+- The recently added method of deleting the history dialogue is implemented in tools/utils.py. At present, I think there is still a lot of room for optimization in this method. I try to adjust the parameters, this set of default parameters in config.py is relatively optimal in my attempt, you can also configure it in this file.
 
 
 ## features
