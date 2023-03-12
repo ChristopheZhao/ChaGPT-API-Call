@@ -3,9 +3,10 @@ from src.openai_request import OpenAI_Request
 import time
 from tools.cfg_wrapper import load_config
 from tools.context import ContextHandler
+from tools.tokennizer import Tokennizer
 
 
-def chat_test(keys,model_name,request_address,context_handler,log_time=False):
+def chat_test(keys,model_name,request_address,context_handler,tokenizer,log_time=False,context_max=3200):
 
     requestor = OpenAI_Request(keys, model_name,request_address)
 
@@ -17,22 +18,28 @@ def chat_test(keys,model_name,request_address,context_handler,log_time=False):
             print('start a new session')
             continue
         else:
-            context_handler.append_cur_to_context(input_s)
+            inputs_length = tokenizer.num_tokens_from_string(input_s)
+            context_handler.append_cur_to_context(input_s,inputs_length)
 
         st_time = time.time()
 
         res = requestor.post_request(context_handler.context)
         ed_time = time.time()
 
-        response = res.json()['choices'][0]['message']['content']
-        #cut \n for show
-        response = response.lstrip("\n")
-        print(f"\nresponse : {response}")
-
-        "\ns".lstrip("\n")
-
         if res.status_code == 200:
-            context_handler.append_cur_to_context(response, tag=1)
+
+            print(res.json())
+            response = res.json()['choices'][0]['message']['content']
+            # cut \n for show
+            response = response.lstrip("\n")
+
+            completion_length = res.json()['usage']['completion_tokens']
+            total_length = res.json()['usage']['total_tokens']
+            print(f"\nresponse : {response}")
+
+            context_handler.append_cur_to_context(response,completion_length,tag=1)
+            if total_length > context_max:
+                context_handler.cut_context(total_length,tokenizer)
 
         if log_time:
             print(f'time cost : {ed_time - st_time}')
@@ -48,4 +55,8 @@ if __name__ == '__main__':
 
     # load context
     context = ContextHandler()
-    chat_test(keys,model_name,request_address,context)
+
+    # load tokenizer
+    tokenizer = Tokennizer(model_name)
+
+    chat_test(keys,model_name,request_address,context,tokenizer)
