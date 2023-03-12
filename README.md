@@ -23,5 +23,8 @@ This project uses python to simply implement the experience of how to call Chagp
 - support delete the former dialogue automatically when the token length exceeds the limit of OpenAI API
 
 ## dialogue show
+- multi turn
 ![image](https://user-images.githubusercontent.com/17317538/222916920-4bf3a9bc-68de-4e3d-86b4-12881c5c6926.png)
 
+- Preserve context ability after deleting several dialogues in round 45
+![image](https://user-images.githubusercontent.com/17317538/224521387-cbc3db6b-8638-4ece-bfc5-dbf6dd1d9bdb.png)
