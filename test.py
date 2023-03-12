@@ -28,7 +28,6 @@ def chat_test(keys,model_name,request_address,context_handler,tokenizer,log_time
 
         if res.status_code == 200:
 
-            print(res.json())
             response = res.json()['choices'][0]['message']['content']
             # cut \n for show
             response = response.lstrip("\n")
