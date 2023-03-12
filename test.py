@@ -54,9 +54,13 @@ if __name__ == '__main__':
     request_address = config.Model_config.request_address
 
     # load context
-    context = ContextHandler()
+    context_manage_config = config.Context_manage_config
+    del_config = context_manage_config.del_config
+    max_context = context_manage_config.max_context
+    context = ContextHandler(max_context=max_context,context_del_config=del_config)
 
     # load tokenizer
     tokenizer = Tokennizer(model_name)
 
+    # for test
     chat_test(keys,model_name,request_address,context,tokenizer)
