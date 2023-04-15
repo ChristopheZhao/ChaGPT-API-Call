@@ -13,7 +13,7 @@ This project uses python to simply implement the experience of how to call Chagp
     - show in terminal:run this command "python test.py" in your terminal,or run test.py in your ide.
     - show in your local web:
         -   run this command "python manager.py"
-        -   run html use ide,click the brower button 
+        -   run html use ide,click the browser button 
 ![image](https://user-images.githubusercontent.com/17317538/232182041-2c7db788-b5fa-4d92-a4a7-e381a8da4276.png)
 
 
