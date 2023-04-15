@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     <meta charset="UTF-8">
+     <title>Conversation Interface</title>
+     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container mt-3">
+      <h1>Conversation Interface</h1>
+      <form id="message-form">
+        <div class="form-group">
+          <label for="message-input">Message:</label>
+          <input type="text" class="form-control" id="message-input" placeholder="Enter your message" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <hr>
+      <div id="reply-container"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+      $(function() {
+        /* Handle form submission */
+        $("#message-form").submit(function(event) {
+          event.preventDefault();
+          var message = $("#message-input").val();
+          sendMessage(message);
+        });
+
+        /* Handle system replies */
+        function addReply(reply, isUser) {
+          var $container = $("#reply-container");
+          var $reply = $("<div>").addClass("alert").text(reply);
+          $reply.text(`${isUser ? "User: " : "System: "}${reply}`);
+          if (isUser) {
+
+            $reply.addClass("alert-secondary text-left");
+
+          } else {
+            $reply.addClass("alert alert-primary");
+
+          }
+          $container.append($reply);
+        }
+
+        /* Send message to the server */
+        function sendMessage(message) {
+          $.ajax({
+            url: "http://127.0.0.1:9200/request_openai",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            data: JSON.stringify({
+              user_input: message,
+            }),
+            success: function(result) {
+              console.log(result.res);
+              addReply(result.res,0);
+            },
+            error: function(xhr, status, error) {
+              console.log(error);
+            }
+          });
+          addReply(message,1);
+          $("#message-input").val("");
+        }
+      });
+    </script>
+  </body>
+</html>
