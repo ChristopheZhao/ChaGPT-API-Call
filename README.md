@@ -4,11 +4,18 @@
 This project uses python to simply implement the experience of how to call Chagpt's api for dialogue and other tasks.
 
 ## how to run
-1. install python package:
+1. install python package(terminal):
     - install openai api(optional): "pip install openai";
     - install tiktoken to calculate the length of tokens: "pip install tiktoken" ,if tips "time out",please add the local sources,such as "pip install tiktoken --      timeout=300 -i https://pypi.tuna.tsinghua.edu.cn/simple";
-2. Add your openAI key to the "authorization" in the config/chatgpt_config.py;
-3. run this command "python test.py" in your terminal,or run test.py in your ide.
+2.if you want to show conversation on your web, you can install flask use this conmmand: "pip install -r requirements.txt"
+3. Add your openAI key to the "authorization" in the config/chatgpt_config.py;
+4. Two method you can choose:
+- show in terminal:run this command "python test.py" in your terminal,or run test.py in your ide.
+- show in your local web:
+-   run this command "python manager.py"
+-   run html use ide,click the brower button 
+![image](https://user-images.githubusercontent.com/17317538/232182041-2c7db788-b5fa-4d92-a4a7-e381a8da4276.png)
+
 
 ## notice
 - You can also use the OpenAI api (https://platform.openai.com/docs/guides/chat) to call, but it’s more flexible and convenient to implement by yourself to expand more applicatioins.
@@ -21,6 +28,7 @@ This project uses python to simply implement the experience of how to call Chagp
 ## features
 - support mutil-turn dialogue
 - support delete the former dialogue automatically when the token length exceeds the limit of OpenAI API
+- support show conversation on local web
 
 ## dialogue show
 - multi turn
@@ -28,3 +36,8 @@ This project uses python to simply implement the experience of how to call Chagp
 
 - Preserve context ability after deleting several dialogues in round 45
 ![image](https://user-images.githubusercontent.com/17317538/224521387-cbc3db6b-8638-4ece-bfc5-dbf6dd1d9bdb.png)
+
+- local web show the conversation
+![image](https://user-images.githubusercontent.com/17317538/232182087-cb2cd336-d150-4d44-be33-ce95d4231d2d.png)
+
+
