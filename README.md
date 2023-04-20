@@ -10,11 +10,13 @@ This project uses python to simply implement the experience of how to call Chagp
 2. if you want to show conversation on your web, you can install flask use this conmmand: "pip install -r requirements.txt"
 3. Add your openAI key to the "authorization" in the config/chatgpt_config.py;
 4. Two method you can choose:
-    - show in terminal:run this command "python test.py" in your terminal,or run test.py in your ide.
-    - show in your local web:
+    - show in terminal: 
+        - run this command "python test.py" in your terminal,or run test.py in your ide.
+    - show in your browser:
         -   run this command "python manager.py"
-        -   run html use ide,click the browser button 
-![image](https://user-images.githubusercontent.com/17317538/232182041-2c7db788-b5fa-4d92-a4a7-e381a8da4276.png)
+        -   open your browser, and type the address:http://127.0.0.1:9200/ ,then you can see the page load as below:  
+
+![image](https://user-images.githubusercontent.com/17317538/233398571-83818f5a-8e00-45ad-9b32-d6db1dbfdd55.png)
 
 
 ## notice
@@ -28,7 +30,6 @@ This project uses python to simply implement the experience of how to call Chagp
 ## features
 - support mutil-turn dialogue
 - support delete the former dialogue automatically when the token length exceeds the limit of OpenAI API
-- support show conversation on local web
 
 ## dialogue show
 - multi turn
@@ -36,8 +37,5 @@ This project uses python to simply implement the experience of how to call Chagp
 
 - Preserve context ability after deleting several dialogues in round 45
 ![image](https://user-images.githubusercontent.com/17317538/224521387-cbc3db6b-8638-4ece-bfc5-dbf6dd1d9bdb.png)
-
-- local web show the conversation
-![image](https://user-images.githubusercontent.com/17317538/232182087-cb2cd336-d150-4d44-be33-ce95d4231d2d.png)
 
 
