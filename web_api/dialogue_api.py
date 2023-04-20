@@ -1,6 +1,5 @@
 from config.chatgpt_config import config_dict
 from src.openai_request import OpenAI_Request
-from tools.cfg_wrapper import load_config
 
 from tools.cfg_wrapper import load_config
 from tools.context import ContextHandler
@@ -9,7 +8,7 @@ from tools.tokennizer import Tokennizer
 import time
 
 
-class python_api_handler(object):
+class dialogue_api_handler(object):
 
     def __init__(self,context_max=3200):
         super().__init__()

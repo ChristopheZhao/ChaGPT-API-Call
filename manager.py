@@ -1,5 +1,5 @@
-from web.python_api import python_api_handler
-from flask import Flask
+from web_api.dialogue_api import dialogue_api_handler
+from flask import Flask, render_template
 from flask_restful import Resource, Api, reqparse
 from flask_cors import CORS
 
@@ -11,7 +11,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('user_input',type=str,location='json')
 
 
-python_api_hl = python_api_handler()
+dialogue_api_hl = dialogue_api_handler()
 
 
 class request_openai(Resource):
@@ -22,13 +22,18 @@ class request_openai(Resource):
         args = parser.parse_args()
         user_request_input = args['user_input']
         try:
-            res = python_api_hl.generate_massage(user_request_input)
+            res = dialogue_api_hl.generate_massage(user_request_input)
             res_dict['res'] = res
         except Exception as e:
             res_dict['code'] = 1
             res_dict['message'] = 'call failde'
             res_dict['res'] = '!!! The api call is abnormal, please check the backend log'
         return res_dict
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 api.add_resource(request_openai, '/request_openai')
