@@ -7,16 +7,17 @@ This project uses python to simply implement the experience of how to call Chagp
 1. install python package(terminal):
     - install openai api(optional): "pip install openai";
     - install tiktoken to calculate the length of tokens: "pip install tiktoken" ,if tips "time out",please add the local sources,such as "pip install tiktoken --      timeout=300 -i https://pypi.tuna.tsinghua.edu.cn/simple";
-2. if you want to show conversation on your web, you can install flask use this conmmand: "pip install -r requirements.txt"
+2. if you want to show conversation in your browser, you can install flask service dependency libraries use this conmmand: "pip install -r requirements.txt"
 3. Add your openAI key to the "authorization" in the config/chatgpt_config.py;
 4. Two method you can choose:
     - show in terminal: 
         - run this command "python test.py" in your terminal,or run test.py in your ide.
+        ![image](https://user-images.githubusercontent.com/17317538/233403607-0c8a5063-2798-4df3-946e-8bf531c7a723.png)
+
     - show in your browser:
         -   run this command "python manager.py"
         -   open your browser, and type the address:http://127.0.0.1:9200/ ,then you can see the page load as below:  
-
-![image](https://user-images.githubusercontent.com/17317538/233398571-83818f5a-8e00-45ad-9b32-d6db1dbfdd55.png)
+        ![image](https://user-images.githubusercontent.com/17317538/233398571-83818f5a-8e00-45ad-9b32-d6db1dbfdd55.png)
 
 
 ## notice
