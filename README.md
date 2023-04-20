@@ -12,7 +12,8 @@ This project uses python to simply implement the experience of how to call Chagp
 4. Two method you can choose:
     - show in terminal: 
         - run this command "python test.py" in your terminal,or run test.py in your ide.
-        ![image](https://user-images.githubusercontent.com/17317538/233403607-0c8a5063-2798-4df3-946e-8bf531c7a723.png)
+        ![image](https://user-images.githubusercontent.com/17317538/233408407-f798960d-cde1-4f8f-af5a-98edbe7a5dd8.png)
+
 
     - show in your browser:
         -   run this command "python manager.py"
