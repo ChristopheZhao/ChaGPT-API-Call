@@ -40,4 +40,5 @@ This project uses python to simply implement the experience of how to call Chagp
 - Preserve context ability after deleting several dialogues in round 45
 ![image](https://user-images.githubusercontent.com/17317538/224521387-cbc3db6b-8638-4ece-bfc5-dbf6dd1d9bdb.png)
 
-
+## todo
+- The content returned by the API can streaming display.
