@@ -18,5 +18,13 @@ config_dict = dict(
         sys_role_ratio=3,
         del_ratio = 0.4,
         max_keep_turns=30)
-    )
+    ),
+
+    generate_config = dict(
+        use_cotomize_param = True,
+        param_dict = dict(
+        temperature = 1,
+        stream = False
+        )
+    ),
 )

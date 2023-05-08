@@ -29,8 +29,14 @@ class dialogue_api_handler(object):
         # load tokenizer
         self.tokenizer = Tokennizer(model_name)
 
-        # for test
-        self.requestor = OpenAI_Request(keys, model_name,request_address)
+        # load api generate parameter
+        generate_config = config.generate_config
+
+        # initialize
+        if generate_config.use_cotomize_param:
+            self.requestor = OpenAI_Request(keys, model_name, request_address,generate_config)
+        else:
+            self.requestor = OpenAI_Request(keys, model_name,request_address)
 
     def generate_massage(self,user_input):
 
