@@ -40,6 +40,16 @@ def chat_test(keys,model_name,request_address,context_handler,tokenizer,log_time
             if total_length > context_max:
                 context_handler.cut_context(total_length,tokenizer)
 
+        else:
+            status_code = res.status_code
+            reason = res.reason
+            des = res.text
+            raise print(f'visit error :\n status code: {status_code}\n reason: {reason}\n err description: {des}\n '
+                        f'please check whether your account  can access OpenAI API normally')
+
+
+
+
         if log_time:
             print(f'time cost : {ed_time - st_time}')
 
