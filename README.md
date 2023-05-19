@@ -28,7 +28,8 @@ This project uses python to simply implement the experience of how to call Chagp
 - The dialogue is entered directly from the command line. By default, the context of the dialogue will always be accumulated. If you want to clear the context, you can directly enter 'clear' on the command line.
 - The recently added method of deleting the history dialogue is implemented in tools/utils.py. At present, I think there is still a lot of room for optimization in this method. I try to adjust the parameters, this set of default parameters in config.py is relatively optimal in my attempt, you can also configure it in this file.
 - It is recommended to run test.py for the first time to ensure that your api key can access OpenAI’s api normally. If it cannot be accessed normally, please refer to the returned error message to set up your own OpenAI account or use another key.For example, if the error message shown in the screenshot below is returned,means that you have exceeded your free $18 in API credits. You can pay for more on the official website.
-    ![image](https://github.com/ChristopheZhao/ChaGPT-API-Call/assets/17317538/e3ddd219-f44a-4244-816e-00df951cf657)
+    ![image](https://github.com/ChristopheZhao/ChaGPT-API-Call/assets/17317538/bc9f4165-13bb-48e5-9a7d-adb8bbc12ccf)
+
 
 
 
