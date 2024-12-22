@@ -27,6 +27,36 @@ class OpenAI_Request(object):
         response = requests.post(self.request_address, headers=self.headers, data=data)
 
         return response
+    
+    def post_request_stream(self, message):
+        print("Preparing stream request...")  # 调试日志
+        
+        data = {
+            "model": self.model__name,
+            "messages": message,
+            "stream": True,
+        }
+
+        if self.generate_config:
+            for k,v in self.generate_config.param_dict.__dict__.items():
+                if k != 'stream':
+                    data[k] = v
+                    
+        print(f"Request data: {json.dumps(data)}")  # 调试日志
+        
+        try:
+            response = requests.post(
+                self.request_address, 
+                headers=self.headers, 
+                data=json.dumps(data),
+                stream=True,
+                timeout=30  # 添加超时设置
+            )
+            print(f"API response status: {response.status_code}")  # 调试日志
+            return response
+        except Exception as e:
+            print(f"Request error: {e}")  # 调试日志
+            raise
 
 
 if __name__ == '__main__':

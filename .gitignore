@@ -2,3 +2,4 @@
 *.xml
 *.iml
 *.pycpython_api.py
+*.pyc

@@ -1,73 +1,333 @@
 <!DOCTYPE html>
 <html>
-  <head>
-     <meta charset="UTF-8">
-     <title>Conversation Interface</title>
-     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-  </head>
-  <body>
-    <div class="container mt-3">
-      <h1>Conversation Interface</h1>
-      <form id="message-form">
-        <div class="form-group">
-          <label for="message-input">Message:</label>
-          <input type="text" class="form-control" id="message-input" placeholder="Enter your message" required>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #ffffff;
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            background: #f0f4f8;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            background: white;
+            border-bottom: 1px solid #e4e4e4;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #1a1a1a;
+        }
+
+        .message-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin: 0 12px;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .user .avatar {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .user .message-content {
+            background: #0d6efd;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .assistant .message-content {
+            background: white;
+            color: #212529;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-container {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid #e4e4e4;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e4e4e4;
+            border-radius: 24px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-size: 1rem;
+        }
+
+        .message-input:focus {
+            border-color: #0d6efd;
+        }
+
+        .send-button {
+            padding: 8px 24px;
+            background: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-button:hover {
+            background: #0b5ed7;
+        }
+
+        .send-button:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 15px;
+            background: currentColor;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Chat Interface</h1>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </form>
-      <hr>
-      <div id="reply-container"></div>
+        <div class="message-list" id="message-list"></div>
+        <div class="input-container">
+            <form id="message-form" class="input-wrapper">
+                <input type="text" class="message-input" id="message-input" placeholder="Type your message..." required>
+                <button type="submit" class="send-button">Send</button>
+            </form>
+        </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script>
-      $(function() {
-        /* Handle form submission */
-        $("#message-form").submit(function(event) {
-          event.preventDefault();
-          var message = $("#message-input").val();
-          sendMessage(message);
-        });
-
-        /* Handle system replies */
-        function addReply(reply, isUser) {
-          var $container = $("#reply-container");
-          var $reply = $("<div>").addClass("alert").text(reply);
-          $reply.text(`${isUser ? "User: " : "System: "}${reply}`);
-          if (isUser) {
-
-            $reply.addClass("alert-secondary text-left");
-
-          } else {
-            $reply.addClass("alert alert-primary");
-
-          }
-          $container.append($reply);
-        }
-
-        /* Send message to the server */
-        function sendMessage(message) {
-          $.ajax({
-            url: "http://127.0.0.1:9200/request_openai",
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            data: JSON.stringify({
-              user_input: message,
-            }),
-            success: function(result) {
-              console.log(result.res);
-              addReply(result.res,0);
-            },
-            error: function(xhr, status, error) {
-              console.log(error);
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageList = document.getElementById('message-list');
+            const messageForm = document.getElementById('message-form');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = messageForm.querySelector('button');
+            
+            function createMessage(content, isUser, withCursor = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = isUser ? 'U' : 'AI';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                // 如果需要光标，添加一个 span 用于文本内容和一个光标元素
+                if (withCursor) {
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = content;
+                    const cursor = document.createElement('span');
+                    cursor.className = 'cursor';
+                    messageContent.appendChild(textSpan);
+                    messageContent.appendChild(cursor);
+                } else {
+                    messageContent.textContent = content;
+                }
+                
+                if (isUser) {
+                    messageDiv.appendChild(messageContent);
+                    messageDiv.appendChild(avatar);
+                } else {
+                    messageDiv.appendChild(avatar);
+                    messageDiv.appendChild(messageContent);
+                }
+                
+                return messageDiv;
             }
-          });
-          addReply(message,1);
-          $("#message-input").val("");
-        }
-      });
+
+            async function processStream(response, messageDiv) {
+              const reader = response.body.getReader();
+              const decoder = new TextDecoder();
+              const contentDiv = messageDiv.querySelector('.message-content');
+              const textSpan = contentDiv.querySelector('span');
+              const cursor = contentDiv.querySelector('.cursor');
+              let responseText = '';
+              let buffer = '';
+
+              try {
+                  while (true) {
+                      const {done, value} = await reader.read();
+                      if (done) {
+                          if (cursor) {
+                              cursor.remove();  // 完成时移除光标元素
+                          }
+                          break;
+                      }
+
+                      buffer += decoder.decode(value, {stream: true});
+                      const lines = buffer.split('\n');
+                      buffer = lines.pop() || '';
+
+                      for (const line of lines) {
+                          if (line.startsWith('data: ')) {
+                              const data = line.slice(5).trim();
+                              if (data === '[DONE]') continue;
+
+                              try {
+                                  const parsed = JSON.parse(data);
+                                  if (parsed.code === 0 && parsed.chunk) {
+                                      responseText += parsed.chunk;
+                                      textSpan.textContent = responseText;
+                                      messageList.scrollTop = messageList.scrollHeight;
+                                  }
+                              } catch (e) {
+                                  console.error('Error parsing chunk:', e);
+                              }
+                          }
+                      }
+                  }
+              } catch (error) {
+                  console.error('Stream processing error:', error);
+                  textSpan.textContent = 'Error reading response.';
+                  if (cursor) {
+                      cursor.remove();  // 错误时也移除光标
+                  }
+              }
+          }
+
+            messageForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const message = messageInput.value.trim();
+                if (!message) return;
+
+                // 禁用发送按钮和输入框
+                sendButton.disabled = true;
+                messageInput.disabled = true;
+
+                // 添加用户消息
+                messageList.appendChild(createMessage(message, true));
+                messageInput.value = '';
+
+                // 创建 AI 响应消息框（带光标）
+                const responseDiv = createMessage('', false, true);
+                messageList.appendChild(responseDiv);
+                messageList.scrollTop = messageList.scrollHeight;
+
+                try {
+                    const response = await fetch('http://127.0.0.1:9200/request_openai', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_input: message
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    await processStream(response, responseDiv);
+                } catch (error) {
+                    console.error('Error:', error);
+                    const contentDiv = responseDiv.querySelector('.message-content');
+                    contentDiv.textContent = 'Sorry, something went wrong.';
+                } finally {
+                    // 重新启用发送按钮和输入框
+                    sendButton.disabled = false;
+                    messageInput.disabled = false;
+                    messageInput.focus();
+                }
+            });
+        });
     </script>
-  </body>
+</body>
 </html>
