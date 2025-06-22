@@ -7,6 +7,9 @@ config_dict = dict(
     Model_config = dict(
         model_name = "gpt-3.5-turbo",
         request_address = "https://api.openai.com/v1/chat/completions",
+        vision_model_name = "gpt-4o",
+        dalle_model_name = "dall-e-3",
+        dalle_request_address = "https://api.openai.com/v1/images/generations",
     ),
 
     Context_manage_config = dict(
