@@ -10,6 +10,12 @@ A lightweight Python project demonstrating multimodal AI interactions with OpenA
 - **CLI Tool**: Simple terminal interface for quick testing
 
 ## Installation
+
+### Requirements
+- Python 3.8 or higher (Python 3.11+ supported)
+- OpenAI API key
+
+### Setup
 1. Install dependencies:
    ```bash
    pip install -r requirements.txt
