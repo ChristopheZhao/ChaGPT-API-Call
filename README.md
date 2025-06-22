@@ -1,52 +1,64 @@
 # ChaGPT-API-Call
 
-## overall
-This project uses python to simply implement the experience of how to call Chagpt's api for dialogue and other tasks.
+A lightweight Python project demonstrating how to interact with the ChatGPT API. It supports multi-turn dialogue, automatic context management and includes an optional browser interface built with Flask.
 
-## how to run
-1. install python package(terminal):
-    - install openai api(optional): "pip install openai";
-    - install tiktoken to calculate the length of tokens: "pip install tiktoken" ,if tips "time out",please add the local sources,such as "pip install tiktoken --      timeout=300 -i https://pypi.tuna.tsinghua.edu.cn/simple";
-2. if you want to show conversation in your browser, you can install flask service dependency libraries use this conmmand: "pip install -r requirements.txt"
-3. Add your openAI key to the "authorization" in the config/chatgpt_config.py;
-4. Two method you can choose:
-    - show in terminal: 
-        - run this command "python test.py" in your terminal,or run test.py in your ide.
-        ![image](https://user-images.githubusercontent.com/17317538/233408407-f798960d-cde1-4f8f-af5a-98edbe7a5dd8.png)
+## Features
+- Multi-turn conversations with context preservation.
+- Automatically removes earlier messages when the token length exceeds the limit.
+- Optional Flask web interface with streaming responses.
+- Simple command line tool for quick testing.
 
+## Installation
+1. Install the basic packages:
+   ```bash
+   pip install openai tiktoken
+   ```
+   If you experience timeouts, use a mirror:
+   ```bash
+   pip install tiktoken --timeout=300 -i https://pypi.tuna.tsinghua.edu.cn/simple
+   ```
+2. For the browser interface install the Flask dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-    - show in your browser:
-        -   run this command "python manager.py"
-        -   open your browser, and type the address:http://127.0.0.1:9200/ ,then you can see the page load as below:  
-        ![image](https://github.com/user-attachments/assets/a60655c7-3e67-4d4c-ad8f-d1d797c2576b)
+## Configuration
+Add your OpenAI key to `config/chatgpt_config.py` under `authorization`.
 
+## Usage
 
-## notice
-- You can also use the OpenAI api (https://platform.openai.com/docs/guides/chat) to call, but it’s more flexible and convenient to implement by yourself to expand more applicatioins.
-  
-  ![image](https://user-images.githubusercontent.com/17317538/222936144-e1b52aa2-b400-4680-a2cb-7dd7ffd99a93.png)
-- The dialogue is entered directly from the command line. By default, the context of the dialogue will always be accumulated. If you want to clear the context, you can directly enter 'clear' on the command line.
-- The recently added method of deleting the history dialogue is implemented in tools/utils.py. At present, I think there is still a lot of room for optimization in this method. I try to adjust the parameters, this set of default parameters in config.py is relatively optimal in my attempt, you can also configure it in this file.
-- It is recommended to run test.py for the first time to ensure that your api key can access OpenAI’s api normally. If it cannot be accessed normally, please refer to the returned error message to set up your own OpenAI account or use another key.For example, if the error message shown in the screenshot below is returned,means that you have exceeded your free $18 in API credits. You can pay for more on the official website.
-    ![image](https://github.com/ChristopheZhao/ChaGPT-API-Call/assets/17317538/bc9f4165-13bb-48e5-9a7d-adb8bbc12ccf)
+### Terminal
+Run the script to start a conversation in your terminal:
+```bash
+python test.py
+```
+![Terminal demo](https://user-images.githubusercontent.com/17317538/233408407-f798960d-cde1-4f8f-af5a-98edbe7a5dd8.png)
 
+Type `clear` at any time to reset the conversation.
 
+### Browser
+Start the Flask server:
+```bash
+python manager.py
+```
+Open [http://127.0.0.1:9200/](http://127.0.0.1:9200/) in your browser and you should see:
+![Web UI](https://github.com/user-attachments/assets/a60655c7-3e67-4d4c-ad8f-d1d797c2576b)
 
+## Notice
+- You may also call the API directly via [OpenAI documentation](https://platform.openai.com/docs/guides/chat), but implementing your own logic offers greater flexibility.
+![OpenAI docs screenshot](https://user-images.githubusercontent.com/17317538/222936144-e1b52aa2-b400-4680-a2cb-7dd7ffd99a93.png)
+- The default context deletion strategy lives in `tools/utils.py`. Adjust parameters in `config/chatgpt_config.py` if needed.
+- Run `test.py` once to verify your API key works. If you exceed your free credits you will receive an error like:
+![quota error](https://github.com/ChristopheZhao/ChaGPT-API-Call/assets/17317538/bc9f4165-13bb-48e5-9a7d-adb8bbc12ccf)
 
-## features
-- support mutil-turn dialogue
-- support delete the former dialogue automatically when the token length exceeds the limit of OpenAI API
+## Dialogue Samples
 
-## dialogue show
-
-- multi turn
-![image](https://user-images.githubusercontent.com/17317538/222916920-4bf3a9bc-68de-4e3d-86b4-12881c5c6926.png)
-
-- Preserve context ability after deleting several dialogues in round 45
-![image](https://user-images.githubusercontent.com/17317538/224521387-cbc3db6b-8638-4ece-bfc5-dbf6dd1d9bdb.png)
+- Multi-turn dialogue  
+  ![Multi-turn demo](https://user-images.githubusercontent.com/17317538/222916920-4bf3a9bc-68de-4e3d-86b4-12881c5c6926.png)
+- Context preserved after pruning old dialogue  
+  ![Context demo](https://user-images.githubusercontent.com/17317538/224521387-cbc3db6b-8638-4ece-bfc5-dbf6dd1d9bdb.png)
 
 ## Recent Updates
-
-- Added streaming response display in web interface
-- Improved UI with modern chat-like interface
-- Enhanced error handling and context management
+- Added streaming response display in web interface.
+- Improved UI with modern chat-like interface.
+- Enhanced error handling and context management.
