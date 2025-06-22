@@ -1,64 +1,75 @@
 # ChaGPT-API-Call
 
-A lightweight Python project demonstrating how to interact with the ChatGPT API. It supports multi-turn dialogue, automatic context management and includes an optional browser interface built with Flask.
+A lightweight Python project demonstrating multimodal AI interactions with OpenAI APIs. Features text chat, image understanding, and image generation through both CLI and web interfaces.
 
 ## Features
-- Multi-turn conversations with context preservation.
-- Automatically removes earlier messages when the token length exceeds the limit.
-- Optional Flask web interface with streaming responses.
-- Simple command line tool for quick testing.
+- **Multimodal Support**: Text chat, image analysis with GPT-4 Vision, and image generation with DALL-E 3
+- **Smart Intent Detection**: Automatically determines whether to use text, vision, or image generation models
+- **Web Interface**: Modern chat UI with drag-and-drop image upload and real-time streaming
+- **Context Management**: Auto-removes old messages when token limits are exceeded
+- **CLI Tool**: Simple terminal interface for quick testing
 
 ## Installation
-1. Install the basic packages:
-   ```bash
-   pip install openai tiktoken
-   ```
-   If you experience timeouts, use a mirror:
-   ```bash
-   pip install tiktoken --timeout=300 -i https://pypi.tuna.tsinghua.edu.cn/simple
-   ```
-2. For the browser interface install the Flask dependencies:
+1. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-
-## Configuration
-Add your OpenAI key to `config/chatgpt_config.py` under `authorization`.
+   
+2. Add your OpenAI API key to `config/chatgpt_config.py`:
+   ```python
+   authorization = "your-openai-api-key-here"
+   ```
 
 ## Usage
 
-### Terminal
-Run the script to start a conversation in your terminal:
-```bash
-python test.py
-```
-![Terminal demo](https://user-images.githubusercontent.com/17317538/233408407-f798960d-cde1-4f8f-af5a-98edbe7a5dd8.png)
-
-Type `clear` at any time to reset the conversation.
-
-### Browser
+### Web Interface (Recommended)
 Start the Flask server:
 ```bash
 python manager.py
 ```
-Open [http://127.0.0.1:9200/](http://127.0.0.1:9200/) in your browser and you should see:
+Open [http://127.0.0.1:9200/](http://127.0.0.1:9200/) in your browser.
+
+**Features:**
+- Text conversations with GPT models
+- Upload images for analysis (drag & drop or click to upload)  
+- Request image generation (e.g., "generate an image of a sunset")
+- Real-time streaming responses
+
 ![Web UI](https://github.com/user-attachments/assets/a60655c7-3e67-4d4c-ad8f-d1d797c2576b)
 
-## Notice
-- You may also call the API directly via [OpenAI documentation](https://platform.openai.com/docs/guides/chat), but implementing your own logic offers greater flexibility.
-![OpenAI docs screenshot](https://user-images.githubusercontent.com/17317538/222936144-e1b52aa2-b400-4680-a2cb-7dd7ffd99a93.png)
-- The default context deletion strategy lives in `tools/utils.py`. Adjust parameters in `config/chatgpt_config.py` if needed.
-- Run `test.py` once to verify your API key works. If you exceed your free credits you will receive an error like:
-![quota error](https://github.com/ChristopheZhao/ChaGPT-API-Call/assets/17317538/bc9f4165-13bb-48e5-9a7d-adb8bbc12ccf)
+### Multimodal Features
 
-## Dialogue Samples
+**Image Upload & Analysis:**
 
-- Multi-turn dialogue  
-  ![Multi-turn demo](https://user-images.githubusercontent.com/17317538/222916920-4bf3a9bc-68de-4e3d-86b4-12881c5c6926.png)
-- Context preserved after pruning old dialogue  
-  ![Context demo](https://user-images.githubusercontent.com/17317538/224521387-cbc3db6b-8638-4ece-bfc5-dbf6dd1d9bdb.png)
+![Image](https://github.com/user-attachments/assets/b6016a83-79a0-4dce-95f2-7ee9d2110180)
 
-## Recent Updates
-- Added streaming response display in web interface.
-- Improved UI with modern chat-like interface.
-- Enhanced error handling and context management.
+**Image Generation:**
+
+![Image](https://github.com/user-attachments/assets/38a3615e-54f6-4c6d-8a21-2c5f2bf35df2)
+
+### Terminal
+For simple text-only conversations:
+```bash
+python test.py
+```
+Type `clear` to reset the conversation context.
+
+![Terminal demo](https://user-images.githubusercontent.com/17317538/233408407-f798960d-cde1-4f8f-af5a-98edbe7a5dd8.png)
+
+## How It Works
+- **Smart Routing**: Automatically detects user intent and routes to appropriate models
+- **Context Management**: Maintains conversation history and automatically prunes when approaching token limits
+- **Image Processing**: Compresses large images automatically for optimal API usage
+- **Streaming**: Real-time response display for better user experience
+
+## Configuration
+Adjust model parameters and context settings in `config/chatgpt_config.py`:
+- Model selection (GPT-3.5, GPT-4, GPT-4 Vision, DALL-E 3)
+- Context management thresholds
+- Temperature and other generation parameters
+
+## Examples
+- **Text Chat**: "Explain quantum computing"
+- **Image Analysis**: Upload a photo + "What's in this image?"
+- **Image Generation**: "Create a futuristic city at sunset"
+- **Mixed Mode**: Upload chart + "Analyze this data and create a summary visualization"
