@@ -50,6 +50,8 @@
             align-items: center;
             gap: 4px;
             user-select: none;
+            margin-left: auto;
+
         }
 
         #wave-canvas {
@@ -322,7 +324,10 @@
     <div class="chat-container">
         <div class="chat-header">
             <h1>GPT Assistant</h1>
-            <label class="voice-toggle"><input type="checkbox" id="voice-mode-toggle"> Voice Mode</label>
+            <label class="voice-toggle form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="voice-mode-toggle">
+                <span class="form-check-label" for="voice-mode-toggle">Voice Mode</span>
+            </label>
         </div>
         <div class="message-list" id="message-list"></div>
         <div class="input-container">
