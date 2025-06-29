@@ -11,6 +11,7 @@ A lightweight Python project demonstrating multimodal AI interactions with OpenA
 - **Speech Support**: Voice recognition via Whisper and text-to-speech playback
 - **Voice Mode**: Dedicated speech interface with automatic detection, live transcription and spoken replies
 
+
 ## Installation
 
 ### Requirements
@@ -44,6 +45,7 @@ Open [http://127.0.0.1:9200/](http://127.0.0.1:9200/) in your browser.
 - Real-time streaming responses
  - Voice input via microphone and spoken replies
    - Enable the "Voice Mode" switch to open the speech interface. Speak and the app will automatically send recognized text.
+
 
 ![Web UI](https://github.com/user-attachments/assets/a60655c7-3e67-4d4c-ad8f-d1d797c2576b)
 

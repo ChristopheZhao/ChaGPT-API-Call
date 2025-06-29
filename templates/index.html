@@ -394,6 +394,7 @@
     </div>
 
     <script>
+
 document.addEventListener('DOMContentLoaded', function() {
     const messageList = document.getElementById('message-list');
     const messageForm = document.getElementById('message-form');
@@ -495,6 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (i === 0) canvasCtx.moveTo(x, y);
                 else canvasCtx.lineTo(x, y);
                 x += sliceWidth;
+
             }
             canvasCtx.lineTo(voiceCanvas.width, voiceCanvas.height / 2);
             canvasCtx.stroke();
@@ -632,6 +634,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             }
+
         } catch (error) {
             console.error('Stream processing error:', error);
             textSpan.textContent = '处理响应时出错。';
@@ -708,6 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             img.onerror = reject;
             img.src = URL.createObjectURL(file);
+
         });
     }
 
