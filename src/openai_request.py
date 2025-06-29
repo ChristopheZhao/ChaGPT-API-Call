@@ -169,6 +169,39 @@ class OpenAI_Request(object):
         response = requests.post(self.dalle_request_address, headers=self.headers, data=json.dumps(data))
         return response
 
+    def post_whisper_transcription(self, file_obj, model="whisper-1", language=None):
+        """Whisper API request - Speech to Text"""
+        headers = {"Authorization": self.headers.get("Authorization")}
+        files = {"file": (file_obj.filename, file_obj.stream, file_obj.mimetype)}
+        data = {"model": model}
+        if language:
+            data["language"] = language
+
+        response = requests.post(
+            "https://api.openai.com/v1/audio/transcriptions",
+            headers=headers,
+            files=files,
+            data=data,
+        )
+        return response
+
+    def post_tts_request(self, text, voice="alloy", model="tts-1"):
+        """OpenAI TTS API request - Text to Speech"""
+        headers = self.headers.copy()
+        headers["Content-Type"] = "application/json"
+        data = {
+            "model": model,
+            "input": text,
+            "voice": voice,
+            "response_format": "mp3",
+        }
+        response = requests.post(
+            "https://api.openai.com/v1/audio/speech",
+            headers=headers,
+            data=json.dumps(data),
+        )
+        return response
+
 
 if __name__ == '__main__':
     keys = "OpenAI API keys"

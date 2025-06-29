@@ -247,6 +247,24 @@ class dialogue_api_handler(object):
                 'error': '!!! The dalle api call is abnormal, please check the backend log'
             }
 
+    def transcribe_audio(self, file_obj, language=None):
+        """Convert speech audio to text using Whisper"""
+        res = self.requestor.post_whisper_transcription(file_obj, language=language)
+        if res.status_code == 200:
+            return res.json().get('text', '')
+        else:
+            print(res.text)
+            return None
+
+    def text_to_speech(self, text, voice="alloy"):
+        """Convert text to speech using OpenAI TTS"""
+        res = self.requestor.post_tts_request(text, voice)
+        if res.status_code == 200:
+            return res.content
+        else:
+            print(res.text)
+            return None
+
     def detect_intent_and_generate(self, user_input, image_url=None):
         """
         Intelligently detect user intent and select appropriate model

@@ -8,6 +8,8 @@ A lightweight Python project demonstrating multimodal AI interactions with OpenA
 - **Web Interface**: Modern chat UI with drag-and-drop image upload and real-time streaming
 - **Context Management**: Auto-removes old messages when token limits are exceeded
 - **CLI Tool**: Simple terminal interface for quick testing
+- **Speech Support**: Voice recognition via Whisper and text-to-speech playback
+- **Voice Mode**: Toggleable voice chat with waveform display and auto spoken replies
 
 ## Installation
 
@@ -37,9 +39,11 @@ Open [http://127.0.0.1:9200/](http://127.0.0.1:9200/) in your browser.
 
 **Features:**
 - Text conversations with GPT models
-- Upload images for analysis (drag & drop or click to upload)  
+- Upload images for analysis (drag & drop or click to upload)
 - Request image generation (e.g., "generate an image of a sunset")
 - Real-time streaming responses
+- Voice input via microphone and spoken replies (voice mode with waveform display)
+  - Enable the "Voice Mode" switch in the chat header to activate the microphone button
 
 ![Web UI](https://github.com/user-attachments/assets/a60655c7-3e67-4d4c-ad8f-d1d797c2576b)
 

@@ -33,12 +33,31 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .chat-header h1 {
             font-size: 1.5rem;
             margin: 0;
             color: #1a1a1a;
+        }
+
+        .voice-toggle {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            user-select: none;
+            margin-left: auto;
+        }
+
+        #wave-canvas {
+            display: none;
+            width: 100px;
+            height: 20px;
+            margin-left: 4px;
         }
 
         .message-list {
@@ -245,6 +264,14 @@
             height: 20px;
         }
 
+        #record-btn {
+            display: none;
+        }
+
+        #record-btn.recording {
+            color: #dc3545;
+        }
+
         .send-button {
             padding: 8px 16px;
             background: #0d6efd;
@@ -296,6 +323,10 @@
     <div class="chat-container">
         <div class="chat-header">
             <h1>GPT Assistant</h1>
+            <label class="voice-toggle form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="voice-mode-toggle">
+                <span class="form-check-label" for="voice-mode-toggle">Voice Mode</span>
+            </label>
         </div>
         <div class="message-list" id="message-list"></div>
         <div class="input-container">
@@ -314,6 +345,12 @@
                                         <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                                     </svg>
                                 </button>
+                                <button type="button" class="upload-btn" id="record-btn" title="Record Voice">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3m5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2m-5 8v3h4v2H8v-2h4v-3h2Z" />
+                                    </svg>
+                                </button>
+                                <canvas id="wave-canvas"></canvas>
                                 <input type="file" id="image-input" accept="image/*" style="display: none;">
                                 <button type="submit" class="send-button">Send</button>
                             </div>
@@ -331,12 +368,32 @@
             const messageInput = document.getElementById('message-input');
             const sendButton = messageForm.querySelector('button');
             const uploadBtn = document.getElementById('upload-btn');
+            const recordBtn = document.getElementById('record-btn');
+            const waveCanvas = document.getElementById('wave-canvas');
+            const voiceToggle = document.getElementById('voice-mode-toggle');
             const imageInput = document.getElementById('image-input');
             const attachmentPreview = document.getElementById('attachment-preview');
             const previewImage = document.getElementById('preview-image');
             const removeAttachmentBtn = document.getElementById('remove-attachment');
             
             let uploadedImageUrl = null;
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let recording = false;
+            let voiceMode = false;
+            let audioContext = null;
+            let analyser = null;
+            let animationId = null;
+
+            recordBtn.style.display = 'none';
+            
+            voiceToggle.addEventListener('change', () => {
+                voiceMode = voiceToggle.checked;
+                recordBtn.style.display = voiceMode ? 'inline-flex' : 'none';
+                if (!voiceMode) {
+                    waveCanvas.style.display = 'none';
+                }
+            });
 
             // 上传按钮点击处理
             uploadBtn.addEventListener('click', () => {
@@ -353,6 +410,84 @@
             // 移除附件处理
             removeAttachmentBtn.addEventListener('click', () => {
                 clearAttachment();
+            });
+
+            recordBtn.addEventListener('click', async () => {
+                if (!recording) {
+                    audioChunks = [];
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 1024;
+                    source.connect(analyser);
+
+                    const bufferLength = analyser.fftSize;
+                    const dataArray = new Uint8Array(bufferLength);
+                    const canvasCtx = waveCanvas.getContext('2d');
+
+                    function draw() {
+                        animationId = requestAnimationFrame(draw);
+                        analyser.getByteTimeDomainData(dataArray);
+                        canvasCtx.fillStyle = '#ffffff';
+                        canvasCtx.fillRect(0, 0, waveCanvas.width, waveCanvas.height);
+                        canvasCtx.lineWidth = 2;
+                        canvasCtx.strokeStyle = '#0d6efd';
+                        canvasCtx.beginPath();
+                        let sliceWidth = waveCanvas.width / bufferLength;
+                        let x = 0;
+                        for (let i = 0; i < bufferLength; i++) {
+                            const v = dataArray[i] / 128.0;
+                            const y = v * waveCanvas.height / 2;
+                            if (i === 0) {
+                                canvasCtx.moveTo(x, y);
+                            } else {
+                                canvasCtx.lineTo(x, y);
+                            }
+                            x += sliceWidth;
+                        }
+                        canvasCtx.lineTo(waveCanvas.width, waveCanvas.height / 2);
+                        canvasCtx.stroke();
+                    }
+
+                    waveCanvas.style.display = 'block';
+                    draw();
+
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        if (animationId) cancelAnimationFrame(animationId);
+                        waveCanvas.style.display = 'none';
+                        if (audioContext) {
+                            audioContext.close();
+                            audioContext = null;
+                        }
+                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('audio', blob, 'record.webm');
+                        try {
+                            const res = await fetch('http://127.0.0.1:9200/speech_to_text', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await res.json();
+                            if (data.code === 0 && data.text) {
+                                messageInput.value = data.text;
+                                messageInput.focus();
+                            }
+                        } catch (e) {
+                            console.error('speech to text failed', e);
+                        }
+                    };
+                    mediaRecorder.start();
+                    recordBtn.classList.add('recording');
+                    recording = true;
+                } else {
+                    mediaRecorder.stop();
+                    recordBtn.classList.remove('recording');
+                    recording = false;
+                }
             });
 
             // 拖拽上传到整个输入区域
@@ -617,6 +752,9 @@
                             if (cursor) {
                                 cursor.remove();
                             }
+                            if (responseText && voiceMode) {
+                                playTTS(responseText);
+                            }
                             break;
                         }
 
@@ -657,6 +795,24 @@
                     if (cursor) {
                         cursor.remove();
                     }
+                }
+            }
+
+            async function playTTS(text) {
+                try {
+                    const resp = await fetch('http://127.0.0.1:9200/text_to_speech', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text })
+                    });
+                    if (resp.ok) {
+                        const blob = await resp.blob();
+                        const url = URL.createObjectURL(blob);
+                        const audio = new Audio(url);
+                        audio.play();
+                    }
+                } catch (e) {
+                    console.error('TTS failed', e);
                 }
             }
         });

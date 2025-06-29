@@ -43,6 +43,37 @@ def request_openai():
     except Exception as e:
         return {'code': 1, 'message': str(e)}, 500
 
+@app.route("/speech_to_text", methods=['POST'])
+def speech_to_text():
+    try:
+        if 'audio' not in request.files:
+            return {'code': 1, 'message': 'Missing audio file'}, 400
+
+        file_obj = request.files['audio']
+        text = dialogue_api_hl.transcribe_audio(file_obj)
+        if text is None:
+            return {'code': 1, 'message': 'transcription failed'}, 500
+        return {'code': 0, 'text': text}
+    except Exception as e:
+        return {'code': 1, 'message': str(e)}, 500
+
+@app.route("/text_to_speech", methods=['POST'])
+def text_to_speech():
+    try:
+        text = request.json.get('text')
+        if not text:
+            return {'code': 1, 'message': 'Missing text'}, 400
+        audio_data = dialogue_api_hl.text_to_speech(text)
+        if audio_data is None:
+            return {'code': 1, 'message': 'tts failed'}, 500
+        return Response(
+            audio_data,
+            mimetype='audio/mpeg',
+            headers={'Content-Disposition': 'attachment; filename="speech.mp3"'}
+        )
+    except Exception as e:
+        return {'code': 1, 'message': str(e)}, 500
+
 @app.route("/request_smart", methods=['POST'])
 def request_smart():
     """
