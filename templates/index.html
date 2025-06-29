@@ -314,6 +314,11 @@
                                         <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                                     </svg>
                                 </button>
+                                <button type="button" class="upload-btn" id="record-btn" title="Record Voice">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3m5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2m-5 8v3h4v2H8v-2h4v-3h2Z" />
+                                    </svg>
+                                </button>
                                 <input type="file" id="image-input" accept="image/*" style="display: none;">
                                 <button type="submit" class="send-button">Send</button>
                             </div>
@@ -331,12 +336,16 @@
             const messageInput = document.getElementById('message-input');
             const sendButton = messageForm.querySelector('button');
             const uploadBtn = document.getElementById('upload-btn');
+            const recordBtn = document.getElementById('record-btn');
             const imageInput = document.getElementById('image-input');
             const attachmentPreview = document.getElementById('attachment-preview');
             const previewImage = document.getElementById('preview-image');
             const removeAttachmentBtn = document.getElementById('remove-attachment');
             
             let uploadedImageUrl = null;
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let recording = false;
 
             // 上传按钮点击处理
             uploadBtn.addEventListener('click', () => {
@@ -353,6 +362,40 @@
             // 移除附件处理
             removeAttachmentBtn.addEventListener('click', () => {
                 clearAttachment();
+            });
+
+            recordBtn.addEventListener('click', async () => {
+                if (!recording) {
+                    audioChunks = [];
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('audio', blob, 'record.webm');
+                        try {
+                            const res = await fetch('http://127.0.0.1:9200/speech_to_text', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await res.json();
+                            if (data.code === 0 && data.text) {
+                                messageInput.value = data.text;
+                                messageInput.focus();
+                            }
+                        } catch (e) {
+                            console.error('speech to text failed', e);
+                        }
+                    };
+                    mediaRecorder.start();
+                    recordBtn.classList.add('recording');
+                    recording = true;
+                } else {
+                    mediaRecorder.stop();
+                    recordBtn.classList.remove('recording');
+                    recording = false;
+                }
             });
 
             // 拖拽上传到整个输入区域
@@ -617,6 +660,9 @@
                             if (cursor) {
                                 cursor.remove();
                             }
+                            if (responseText) {
+                                playTTS(responseText);
+                            }
                             break;
                         }
 
@@ -657,6 +703,24 @@
                     if (cursor) {
                         cursor.remove();
                     }
+                }
+            }
+
+            async function playTTS(text) {
+                try {
+                    const resp = await fetch('http://127.0.0.1:9200/text_to_speech', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text })
+                    });
+                    if (resp.ok) {
+                        const blob = await resp.blob();
+                        const url = URL.createObjectURL(blob);
+                        const audio = new Audio(url);
+                        audio.play();
+                    }
+                } catch (e) {
+                    console.error('TTS failed', e);
                 }
             }
         });
