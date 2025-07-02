@@ -182,6 +182,7 @@ class OpenAI_Request(object):
             headers=headers,
             files=files,
             data=data,
+            timeout=(5, 30)  # 连接超时5秒，读取超时30秒
         )
         return response
 
@@ -199,6 +200,7 @@ class OpenAI_Request(object):
             "https://api.openai.com/v1/audio/speech",
             headers=headers,
             data=json.dumps(data),
+            timeout=(5, 45)  # 连接超时5秒，读取超时45秒 (TTS生成时间较长)
         )
         return response
 

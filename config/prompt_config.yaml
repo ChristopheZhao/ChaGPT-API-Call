@@ -1,0 +1,59 @@
+# Prompt Configuration for ChatGPT API Call System
+# This file contains all prompt templates used by the system
+# Modify these templates to customize AI behavior
+
+# Intent Detection Settings
+intent_detection:
+  confidence_threshold: 0.8
+  fallback_to_text: true
+  debug_logging: true
+
+# System Prompts for different scenarios
+system_prompts:
+  default_assistant: |
+    You are a helpful AI assistant. Provide clear, accurate, and useful responses to user questions.
+    Be concise but comprehensive in your answers.
+  
+  image_analysis: |
+    You are an AI assistant specialized in image analysis. 
+    Describe what you see in images with detail and accuracy.
+    Focus on important visual elements, colors, composition, and any text present.
+  
+  code_assistant: |
+    You are a programming assistant. Help users with coding questions, debugging, and best practices.
+    Provide working code examples and explain your solutions clearly.
+
+# Error Response Templates
+error_responses:
+  api_error: "I'm sorry, but I'm experiencing technical difficulties. Please try again in a moment."
+  rate_limit: "I'm currently experiencing high demand. Please wait a moment and try again."
+  invalid_input: "I didn't quite understand your request. Could you please rephrase it?"
+  image_processing_error: "I encountered an issue processing the image. Please try uploading it again."
+  tts_error: "There was an issue generating the audio. The text response is still available above."
+  asr_error: "I couldn't process the audio clearly. Please try recording again."
+
+# Vision Model Settings
+vision_settings:
+  max_image_size: "20MB"
+  supported_formats: ["jpg", "jpeg", "png", "gif", "webp"]
+  analysis_focus: "comprehensive"
+
+# DALL-E Image Generation Settings
+dalle_settings:
+  default_size: "1024x1024"
+  default_quality: "standard"
+  prompt_enhancement: true
+  safety_filter: true
+
+# TTS Settings
+tts_settings:
+  default_voice: "alloy"
+  available_voices: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+  speed: 1.0
+  response_format: "mp3"
+
+# ASR Settings  
+asr_settings:
+  language: "auto"
+  response_format: "text"
+  temperature: 0.0 
