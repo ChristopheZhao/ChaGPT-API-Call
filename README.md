@@ -59,6 +59,10 @@ Open [http://127.0.0.1:9200/](http://127.0.0.1:9200/) in your browser.
 
 ![Image](https://github.com/user-attachments/assets/38a3615e-54f6-4c6d-8a21-2c5f2bf35df2)
 
+**Speech Interaction:**
+
+![Image](https://github.com/user-attachments/assets/db2e6abd-532d-4f22-83cf-efa73a73b747)
+
 ### Terminal
 For simple text-only conversations:
 ```bash

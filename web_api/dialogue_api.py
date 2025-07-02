@@ -4,9 +4,12 @@ from src.openai_request import OpenAI_Request
 from tools.cfg_wrapper import load_config
 from tools.context import ContextHandler
 from tools.tokennizer import Tokennizer
+from tools.prompt_manager import PromptManager
 
 import time
 import json
+import requests
+import base64
 
 class dialogue_api_handler(object):
 
@@ -34,6 +37,9 @@ class dialogue_api_handler(object):
 
         # load api generate parameter
         generate_config = config.generate_config
+
+        # initialize prompt manager
+        self.prompt_manager = PromptManager()
 
         # initialize
         if generate_config.use_cotomize_param:
@@ -249,25 +255,142 @@ class dialogue_api_handler(object):
 
     def transcribe_audio(self, file_obj, language=None):
         """Convert speech audio to text using Whisper"""
-        res = self.requestor.post_whisper_transcription(file_obj, language=language)
-        if res.status_code == 200:
-            return res.json().get('text', '')
-        else:
-            print(res.text)
-            return None
+        max_retries = 2
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            try:
+                res = self.requestor.post_whisper_transcription(file_obj, language=language)
+                
+                if res.status_code == 200:
+                    result = res.json()
+                    text = result.get('text', '').strip()
+                    print(f"ASR success - Text: {text[:100]}{'...' if len(text) > 100 else ''}")
+                    return text
+                else:
+                    print(f"ASR API error - Status: {res.status_code}, Response: {res.text}")
+                    if res.status_code == 429:  # Rate limit
+                        time.sleep(1)
+                        retry_count += 1
+                        continue
+                    return None
+                    
+            except Exception as e:
+                print(f"ASR exception attempt {retry_count + 1}: {e}")
+                retry_count += 1
+                if retry_count < max_retries:
+                    time.sleep(1)
+                    
+        return None
 
     def text_to_speech(self, text, voice="alloy"):
-        """Convert text to speech using OpenAI TTS"""
-        res = self.requestor.post_tts_request(text, voice)
-        if res.status_code == 200:
-            return res.content
-        else:
-            print(res.text)
+        """Convert text to speech using OpenAI TTS (non-streaming)"""
+        max_retries = 2
+        retry_count = 0
+        
+        # Text preprocessing
+        text = text.strip()
+        if not text:
             return None
+            
+        # Handle long text
+        if len(text) > 4000:
+            text = text[:4000] + "..."
+            print(f"TTS text truncated to 4000 characters")
+        
+        while retry_count < max_retries:
+            try:
+                res = self.requestor.post_tts_request(text, voice)
+                
+                if res.status_code == 200:
+                    audio_data = res.content
+                    if len(audio_data) > 1000:  # Check audio data validity
+                        print(f"TTS success - Audio size: {len(audio_data)} bytes, Voice: {voice}")
+                        return audio_data
+                    else:
+                        print(f"TTS returned invalid audio data: {len(audio_data)} bytes")
+                        return None
+                else:
+                    print(f"TTS API error - Status: {res.status_code}, Response: {res.text}")
+                    if res.status_code == 429:  # Rate limit
+                        time.sleep(1)
+                        retry_count += 1
+                        continue
+                    return None
+                    
+            except Exception as e:
+                print(f"TTS exception attempt {retry_count + 1}: {e}")
+                retry_count += 1
+                if retry_count < max_retries:
+                    time.sleep(1)
+                    
+        return None
+
+    def text_to_speech_stream(self, text, voice="alloy"):
+        """Convert text to speech using OpenAI TTS with streaming"""
+        
+        # Text preprocessing
+        text = text.strip()
+        if not text:
+            return
+            
+        # Handle long text
+        if len(text) > 4000:
+            text = text[:4000] + "..."
+            print(f"TTS streaming text truncated to 4000 characters")
+        
+        # Use requests directly for streaming
+        url = "https://api.openai.com/v1/audio/speech"
+        headers = self.requestor.headers.copy()  # Use existing headers with API key
+        
+        data = {
+            "model": "tts-1",  # Use tts-1 for better streaming performance
+            "input": text,
+            "voice": voice,
+            "response_format": "mp3",  # MP3 works better for streaming
+            "speed": 1.0
+        }
+        
+        try:
+            print(f"Starting TTS streaming for text: {text[:50]}...")
+            
+            with requests.post(url, headers=headers, json=data, stream=True) as response:
+                if response.status_code == 200:
+                    print(f"TTS streaming started successfully")
+                    
+                    # Stream audio chunks
+                    for chunk in response.iter_content(chunk_size=4096):
+                        if chunk:
+                            # Convert chunk to base64 for frontend
+                            audio_b64 = base64.b64encode(chunk).decode('utf-8')
+                            yield {
+                                'type': 'audio_chunk',
+                                'data': audio_b64,
+                                'format': 'mp3'
+                            }
+                    
+                    print(f"TTS streaming completed")
+                    yield {
+                        'type': 'audio_end',
+                        'message': 'Audio streaming completed'
+                    }
+                else:
+                    print(f"TTS streaming failed - Status: {response.status_code}")
+                    yield {
+                        'type': 'error',
+                        'message': f'TTS API error: {response.status_code}'
+                    }
+                    
+        except Exception as e:
+            print(f"TTS streaming exception: {e}")
+            yield {
+                'type': 'error',
+                'message': f'TTS streaming failed: {str(e)}'
+            }
 
     def detect_intent_and_generate(self, user_input, image_url=None):
         """
-        Intelligently detect user intent and select appropriate model
+        Intelligently detect user intent and select appropriate model using LLM
         """
         print(f"Intent detection - Input: {user_input[:100]}..., Has image: {bool(image_url)}")
         
@@ -276,57 +399,62 @@ class dialogue_api_handler(object):
             print("Using vision model for image understanding")
             yield from self.generate_vision_response_stream(user_input, image_url)
         else:
-            # Detect if this is an image generation request
-            is_generation = self._is_image_generation_request(user_input)
-            print(f"Image generation detection result: {is_generation}")
-            
-            if is_generation:
-                print("Using DALL-E for image generation")
-                # Generate image and return result
-                result = self.generate_dalle_image(user_input)
-                if result['success']:
-                    yield f"I've generated an image for you. Description: {result['revised_prompt']}"
-                    yield f"[IMAGE:{result['image_url']}]"  # Special marker for frontend recognition
+            # Use LLM to detect intent
+            try:
+                is_generation = self._detect_intent_with_llm(user_input)
+                print(f"LLM intent detection result: {is_generation}")
+                
+                if is_generation:
+                    print("Using DALL-E for image generation")
+                    # Generate image and return result
+                    result = self.generate_dalle_image(user_input)
+                    if result['success']:
+                        yield f"I've generated an image for you. Description: {result['revised_prompt']}"
+                        yield f"[IMAGE:{result['image_url']}]"  # Special marker for frontend recognition
+                    else:
+                        yield f"Image generation failed: {result['error']}"
                 else:
-                    yield f"Image generation failed: {result['error']}"
-            else:
-                print("Using regular text model")
-                # Regular text conversation
+                    print("Using regular text model")
+                    # Regular text conversation
+                    yield from self.generate_massage_stream(user_input)
+            except Exception as e:
+                print(f"Intent detection failed, defaulting to text conversation: {e}")
+                # Fallback to regular text conversation if intent detection fails
                 yield from self.generate_massage_stream(user_input)
 
-    def _is_image_generation_request(self, text):
+    def _detect_intent_with_llm(self, user_input):
         """
-        Detect if this is an image generation request
+        Use LLM to detect if the user input is requesting image generation
         """
-        image_keywords = [
-            '画', '绘制', '生成图片', '生成图像', '创建图片', '创建图像', 
-            '图片', '图像', '插画', '画面', '视觉', 'draw', 'generate', 'create', 
-            'make', 'paint', 'painting', 'illustration', 'design', 'picture', 
-            'image', 'artwork', 'sketch', '设计一个', '帮我画', '我想要一张', 
-            '制作图片', '做一张图', 'style', 'artistic'
-        ]
+        try:
+            # Get intent detection prompt from prompt manager
+            intent_detection_prompt = self.prompt_manager.get_intent_detection_prompt(user_input)
         
-        # Convert to lowercase for matching
-        text_lower = text.lower()
-        
-        # Check if contains image generation keywords
-        for keyword in image_keywords:
-            if keyword in text_lower:
-                return True
+            # Create a simple context for intent detection
+            intent_context = [{"role": "user", "content": intent_detection_prompt}]
+            
+            # Use the existing requestor to make the API call
+            response = self.requestor.post_request(intent_context)
+            
+            if response.status_code == 200:
+                result = response.json()['choices'][0]['message']['content'].strip().upper()
+                print(f"Intent detection response: {result}")
                 
-        # Check specific generation patterns
-        generation_patterns = [
-            '画一', '画个', '画出', '生成一', '制作一', '创建一',
-            '我想要', '帮我做', '能画', '可以画', '给我画',
-            'generate a', 'create a', 'make a', 'draw a', 'paint a',
-            'generate an', 'create an', 'make an', 'draw an', 'paint an'
-        ]
-        
-        for pattern in generation_patterns:
-            if pattern in text_lower:
-                return True
+                # Parse the response
+                if "YES" in result:
+                    return True
+                elif "NO" in result:
+                    return False
+                else:
+                    print(f"Unexpected intent detection response: {result}, defaulting to NO")
+                    return False
+            else:
+                print(f"Intent detection API failed: {response.status_code}")
+                return False
                 
-        return False
+        except Exception as e:
+            print(f"Intent detection error: {e}")
+            return False
 
 
 
