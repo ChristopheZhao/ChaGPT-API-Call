@@ -34,8 +34,131 @@
             top: 0;
             z-index: 1000;
             display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .header-top {
+            display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .session-tabs {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            padding: 4px 0;
+        }
+
+        .session-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            min-width: 120px;
+            max-width: 200px;
+        }
+
+        .session-tab.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .session-tab-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .session-tab-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .session-tab-close:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .new-session-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .model-selector {
+            position: relative;
+            display: inline-block;
+        }
+
+        .model-selector-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .model-selector-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1001;
+            min-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .model-option {
+            padding: 12px;
+            border-bottom: 1px solid #f8f9fa;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .model-option:hover {
+            background: #f8f9fa;
+        }
+
+        .model-option.selected {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+
+        .model-name {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .model-description {
+            font-size: 12px;
+            color: #666;
         }
 
         .chat-header h1 {
@@ -1107,15 +1230,25 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>GPT Assistant</h1>
-            <div class="voice-header-controls">
-            <label class="voice-toggle form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="voice-mode-toggle">
-                <span class="form-check-label" for="voice-mode-toggle">Voice Mode</span>
-            </label>
-                <button id="background-settings-header" class="voice-settings-header-btn" title="Background Settings">🎨</button>
-                <button id="voice-settings-header" class="voice-settings-header-btn" title="Voice Settings">⚙️</button>
+            <div class="header-top">
+                <h1>GPT Assistant</h1>
+                <div class="voice-header-controls">
+                    <div class="model-selector">
+                        <button id="model-selector-btn" class="model-selector-btn">
+                            <span>GPT-3.5 Turbo</span>
+                            <span>▼</span>
+                        </button>
+                        <div id="model-selector-dropdown" class="model-selector-dropdown"></div>
+                    </div>
+                    <label class="voice-toggle form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="voice-mode-toggle">
+                        <span class="form-check-label" for="voice-mode-toggle">Voice Mode</span>
+                    </label>
+                    <button id="background-settings-header" class="voice-settings-header-btn" title="Background Settings">🎨</button>
+                    <button id="voice-settings-header" class="voice-settings-header-btn" title="Voice Settings">⚙️</button>
+                </div>
             </div>
+            <div class="session-tabs" id="session-tabs"></div>
         </div>
         <div class="message-list" id="message-list"></div>
         <div id="voice-panel" class="voice-panel">
@@ -1178,7 +1311,272 @@
 
     <script>
 
+// Session Management System
+class SessionManager {
+    constructor() {
+        this.sessions = new Map();
+        this.currentSessionId = null;
+        this.loadSessions();
+    }
+
+    createSession(title = null) {
+        const sessionId = Date.now().toString();
+        const session = {
+            id: sessionId,
+            title: title || 'New Conversation',
+            messages: [],
+            createdAt: new Date().toISOString(),
+            model: 'gpt-3.5-turbo',
+            lastActive: new Date().toISOString()
+        };
+        this.sessions.set(sessionId, session);
+        this.currentSessionId = sessionId;
+        this.saveSessions();
+        this.renderSessionTabs();
+        this.clearMessageList();
+        return sessionId;
+    }
+
+    switchSession(sessionId) {
+        if (this.sessions.has(sessionId)) {
+            this.saveCurrentMessages();
+            this.currentSessionId = sessionId;
+            this.loadSessionMessages();
+            this.renderSessionTabs();
+            this.sessions.get(sessionId).lastActive = new Date().toISOString();
+            this.saveSessions();
+        }
+    }
+
+    deleteSession(sessionId) {
+        if (this.sessions.size <= 1) return;
+        this.sessions.delete(sessionId);
+        if (this.currentSessionId === sessionId) {
+            const remainingSessions = Array.from(this.sessions.keys());
+            this.currentSessionId = remainingSessions[0];
+            this.loadSessionMessages();
+        }
+        this.saveSessions();
+        this.renderSessionTabs();
+    }
+
+    getCurrentSession() {
+        return this.sessions.get(this.currentSessionId);
+    }
+
+    addMessageToCurrentSession(message) {
+        const session = this.getCurrentSession();
+        if (session) {
+            session.messages.push(message);
+            session.lastActive = new Date().toISOString();
+            if (!session.title || session.title === 'New Conversation') {
+                if (message.isUser && message.content.length > 0) {
+                    session.title = message.content.substring(0, 30) + (message.content.length > 30 ? '...' : '');
+                }
+            }
+            this.saveSessions();
+            this.renderSessionTabs();
+        }
+    }
+
+    saveSessions() {
+        const sessionsData = Array.from(this.sessions.entries());
+        localStorage.setItem('chatSessions', JSON.stringify(sessionsData));
+        localStorage.setItem('currentSessionId', this.currentSessionId);
+    }
+
+    loadSessions() {
+        try {
+            const sessionsData = localStorage.getItem('chatSessions');
+            const currentSessionId = localStorage.getItem('currentSessionId');
+            
+            if (sessionsData) {
+                const sessions = JSON.parse(sessionsData);
+                this.sessions = new Map(sessions);
+                this.currentSessionId = currentSessionId;
+            }
+            
+            if (this.sessions.size === 0) {
+                this.createSession();
+            }
+        } catch (e) {
+            console.log('Failed to load sessions, creating new one');
+            this.createSession();
+        }
+    }
+
+    renderSessionTabs() {
+        const tabsContainer = document.getElementById('session-tabs');
+        if (!tabsContainer) return;
+
+        tabsContainer.innerHTML = '';
+        
+        const sortedSessions = Array.from(this.sessions.values())
+            .sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+
+        sortedSessions.forEach(session => {
+            const tab = document.createElement('div');
+            tab.className = `session-tab ${session.id === this.currentSessionId ? 'active' : ''}`;
+            tab.innerHTML = `
+                <span class="session-tab-title">${session.title}</span>
+                <button class="session-tab-close" onclick="sessionManager.deleteSession('${session.id}')">&times;</button>
+            `;
+            tab.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('session-tab-close')) {
+                    this.switchSession(session.id);
+                }
+            });
+            tabsContainer.appendChild(tab);
+        });
+
+        const newBtn = document.createElement('button');
+        newBtn.className = 'new-session-btn';
+        newBtn.textContent = '+ New';
+        newBtn.addEventListener('click', () => this.createSession());
+        tabsContainer.appendChild(newBtn);
+    }
+
+    saveCurrentMessages() {
+        const session = this.getCurrentSession();
+        if (session) {
+            const messageElements = document.querySelectorAll('.message');
+            session.messages = Array.from(messageElements).map(el => ({
+                content: el.querySelector('.message-content').textContent,
+                isUser: el.classList.contains('user'),
+                timestamp: new Date().toISOString()
+            }));
+            this.saveSessions();
+        }
+    }
+
+    loadSessionMessages() {
+        const session = this.getCurrentSession();
+        this.clearMessageList();
+        
+        if (session && session.messages) {
+            session.messages.forEach(msg => {
+                const messageDiv = createMessage(msg.content, msg.isUser);
+                const messageList = document.getElementById('message-list');
+                if (messageList) {
+                    messageList.appendChild(messageDiv);
+                }
+            });
+            const messageList = document.getElementById('message-list');
+            if (messageList) {
+                messageList.scrollTop = messageList.scrollHeight;
+            }
+        }
+    }
+
+    clearMessageList() {
+        const messageList = document.getElementById('message-list');
+        if (messageList) {
+            messageList.innerHTML = '';
+        }
+    }
+}
+
+// Model Selector System
+class ModelSelector {
+    constructor() {
+        this.models = [
+            {
+                id: 'gpt-3.5-turbo',
+                name: 'GPT-3.5 Turbo',
+                description: 'Fast and efficient for most tasks',
+                capabilities: ['text', 'conversation']
+            },
+            {
+                id: 'gpt-4o',
+                name: 'GPT-4o',
+                description: 'Most capable model for complex tasks',
+                capabilities: ['text', 'vision', 'conversation']
+            },
+            {
+                id: 'dall-e-3',
+                name: 'DALL-E 3',
+                description: 'Advanced image generation',
+                capabilities: ['image-generation']
+            }
+        ];
+        this.currentModel = 'gpt-3.5-turbo';
+        this.initializeSelector();
+    }
+
+    initializeSelector() {
+        const selectorBtn = document.getElementById('model-selector-btn');
+        const dropdown = document.getElementById('model-selector-dropdown');
+        
+        if (selectorBtn && dropdown) {
+            selectorBtn.addEventListener('click', () => {
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!selectorBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            this.renderModelOptions();
+            this.updateCurrentModelDisplay();
+        }
+    }
+
+    renderModelOptions() {
+        const dropdown = document.getElementById('model-selector-dropdown');
+        if (!dropdown) return;
+
+        dropdown.innerHTML = this.models.map(model => `
+            <div class="model-option ${model.id === this.currentModel ? 'selected' : ''}" 
+                 onclick="modelSelector.selectModel('${model.id}')">
+                <div class="model-name">${model.name}</div>
+                <div class="model-description">${model.description}</div>
+            </div>
+        `).join('');
+    }
+
+    selectModel(modelId) {
+        this.currentModel = modelId;
+        
+        const session = sessionManager.getCurrentSession();
+        if (session) {
+            session.model = modelId;
+            sessionManager.saveSessions();
+        }
+
+        this.updateCurrentModelDisplay();
+        this.renderModelOptions();
+        
+        document.getElementById('model-selector-dropdown').style.display = 'none';
+        
+        console.log(`Switched to model: ${modelId}`);
+    }
+
+    updateCurrentModelDisplay() {
+        const btn = document.getElementById('model-selector-btn');
+        if (btn) {
+            const model = this.models.find(m => m.id === this.currentModel);
+            btn.innerHTML = `
+                <span>${model ? model.name : this.currentModel}</span>
+                <span>▼</span>
+            `;
+        }
+    }
+
+    getCurrentModel() {
+        return this.currentModel;
+    }
+}
+
+// Initialize session manager and model selector
+const sessionManager = new SessionManager();
+const modelSelector = new ModelSelector();
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize session management
+    sessionManager.renderSessionTabs();
+    sessionManager.loadSessionMessages();
     const messageList = document.getElementById('message-list');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
@@ -1594,6 +1992,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Background management functions
     function applyBackground() {
         const messageList = document.getElementById('message-list');
+
+
         console.log('Applying background:', currentBackground);
         
         // Remove all background classes first
@@ -1952,6 +2352,15 @@ document.addEventListener('DOMContentLoaded', function() {
         messageInput.value = '';
         const currentImageUrl = uploadedImageUrl;
         clearAttachment();
+        
+        // Add message to current session
+        sessionManager.addMessageToCurrentSession({
+            content: message,
+            isUser: true,
+            timestamp: new Date().toISOString(),
+            imageUrl: currentImageUrl
+        });
+        
         try {
             await handleSmartRequest(message, currentImageUrl);
         } catch (error) {
@@ -2370,6 +2779,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         voiceText.textContent = `Recognition result: "${userText}"`;
                     messageList.appendChild(createMessage(userText, true));
                     messageList.scrollTop = messageList.scrollHeight;
+                    
+                    // Add message to current session
+                    sessionManager.addMessageToCurrentSession({
+                        content: userText,
+                        isUser: true,
+                        timestamp: new Date().toISOString()
+                    });
+                    
                     await handleSmartRequest(userText);
                         return; // Success, exit retry loop
                     } else {
@@ -2442,6 +2859,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             playTTSChunkStreaming(streamingTTSBuffer);
                             streamingTTSBuffer = '';
                         }
+                    }
+                    
+                    // Add assistant response to current session
+                    if (responseText) {
+                        sessionManager.addMessageToCurrentSession({
+                            content: responseText,
+                            isUser: false,
+                            timestamp: new Date().toISOString()
+                        });
                     }
                     break;
                 }
