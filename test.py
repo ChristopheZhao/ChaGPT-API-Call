@@ -44,8 +44,9 @@ def chat_test(keys,model_name,request_address,context_handler,tokenizer,log_time
             status_code = res.status_code
             reason = res.reason
             des = res.text
-            raise print(f'visit error :\n status code: {status_code}\n reason: {reason}\n err description: {des}\n '
-                        f'please check whether your account  can access OpenAI API normally')
+            print(f'visit error :\n status code: {status_code}\n reason: {reason}\n err description: {des}\n '
+                  f'please check whether your account  can access OpenAI API normally')
+            return
 
 
 
