@@ -31,11 +31,14 @@ class OpenAI_Request(object):
 
         return response
     
-    def post_request_stream(self, message):
+    def post_request_stream(self, message, model=None):
         print("Preparing stream request...")  # Debug log
         
+        # 使用传入的模型或者默认模型
+        selected_model = model if model else self.model__name
+        
         data = {
-            "model": self.model__name,
+            "model": selected_model,
             "messages": message,
             "stream": True,
         }

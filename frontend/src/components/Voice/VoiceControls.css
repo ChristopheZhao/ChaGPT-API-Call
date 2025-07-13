@@ -1,0 +1,176 @@
+/* Voice Controls Styles */
+.voice-controls {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.voice-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1rem;
+}
+
+.voice-header h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1e293b;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.voice-tip {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.voice-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.setting-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.voice-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.voice-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.speed-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.speed-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.speed-slider::-webkit-slider-thumb:hover {
+  background: #5a67d8;
+  transform: scale(1.1);
+}
+
+.speed-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.setting-toggles {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.setting-toggle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.setting-toggle:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.setting-toggle.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.setting-toggle.active:hover {
+  background: #5a67d8;
+}
+
+.setting-toggle span {
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .voice-controls {
+    min-width: 260px;
+    max-width: 300px;
+    padding: 1.25rem;
+  }
+  
+  .voice-header h3 {
+    font-size: 1rem;
+  }
+  
+  .voice-tip {
+    font-size: 0.8rem;
+  }
+  
+  .setting-toggles {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .setting-toggle {
+    flex-direction: row;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+  
+  .setting-toggle span {
+    margin-left: 0.5rem;
+  }
+} 

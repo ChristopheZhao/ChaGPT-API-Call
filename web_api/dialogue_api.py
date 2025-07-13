@@ -86,8 +86,8 @@ class dialogue_api_handler(object):
             return '!!! The api call is abnormal, please check the backend log'
         
 
-    def generate_massage_stream(self, user_input):
-        print(f"Starting generate_massage_stream with input: {user_input}")  # 调试日志
+    def generate_massage_stream(self, user_input, model=None):
+        print(f"Starting generate_massage_stream with input: {user_input}, model: {model}")  # 调试日志
         
         if user_input == "clear":
             self.context_handler.clear()
@@ -98,7 +98,7 @@ class dialogue_api_handler(object):
         self.context_handler.append_cur_to_context(user_input, inputs_length)
         
         print("Making API request...")  # 调试日志
-        response = self.requestor.post_request_stream(self.context_handler.context)
+        response = self.requestor.post_request_stream(self.context_handler.context, model)
         print(f"API response status: {response.status_code}")  # 调试日志
         
         full_response = ""
@@ -253,6 +253,27 @@ class dialogue_api_handler(object):
                 'error': '!!! The dalle api call is abnormal, please check the backend log'
             }
 
+    def generate_dalle_image_stream(self, prompt):
+        """
+        Generate DALL-E image with streaming-like response
+        """
+        print(f"Generating DALL-E image with prompt: {prompt}")
+        
+        try:
+            # 首先生成图像
+            result = self.generate_dalle_image(prompt)
+            
+            if result['success']:
+                # 流式返回结果
+                yield "I've generated an image for you."
+                yield f"[IMAGE:{result['image_url']}]"  # Special marker for frontend recognition
+            else:
+                yield f"Image generation failed: {result['error']}"
+                
+        except Exception as e:
+            print(f"Error in generate_dalle_image_stream: {e}")
+            yield f"Error generating image: {str(e)}"
+
     def transcribe_audio(self, file_obj, language=None):
         """Convert speech audio to text using Whisper"""
         max_retries = 2
@@ -388,39 +409,42 @@ class dialogue_api_handler(object):
                 'message': f'TTS streaming failed: {str(e)}'
             }
 
-    def detect_intent_and_generate(self, user_input, image_url=None):
+    def detect_intent_and_generate(self, user_input, image_url=None, model=None):
         """
-        Intelligently detect user intent and select appropriate model using LLM
+        Detect user intent and route to appropriate generation method
         """
-        print(f"Intent detection - Input: {user_input[:100]}..., Has image: {bool(image_url)}")
+        print(f"Detecting intent for input: {user_input[:50]}..., model: {model}")
         
-        if image_url:
-            # Image uploaded, use vision model
-            print("Using vision model for image understanding")
-            yield from self.generate_vision_response_stream(user_input, image_url)
-        else:
-            # Use LLM to detect intent
-            try:
-                is_generation = self._detect_intent_with_llm(user_input)
-                print(f"LLM intent detection result: {is_generation}")
-                
-                if is_generation:
-                    print("Using DALL-E for image generation")
-                    # Generate image and return result
-                    result = self.generate_dalle_image(user_input)
-                    if result['success']:
-                        yield f"I've generated an image for you. Description: {result['revised_prompt']}"
-                        yield f"[IMAGE:{result['image_url']}]"  # Special marker for frontend recognition
-                    else:
-                        yield f"Image generation failed: {result['error']}"
-                else:
-                    print("Using regular text model")
-                    # Regular text conversation
-                    yield from self.generate_massage_stream(user_input)
-            except Exception as e:
-                print(f"Intent detection failed, defaulting to text conversation: {e}")
-                # Fallback to regular text conversation if intent detection fails
-                yield from self.generate_massage_stream(user_input)
+        try:
+            # 检查是否明确请求图像生成
+            if any(keyword in user_input.lower() for keyword in ['generate image', 'create image', 'draw', 'paint', 'generate a picture', 'create a picture']):
+                print("Direct image generation request detected")
+                for chunk in self.generate_dalle_image_stream(user_input):
+                    yield chunk
+                return
+            
+            # 如果用户上传了图像，使用视觉模型
+            if image_url:
+                print("Image provided, using vision model")
+                for chunk in self.generate_vision_response_stream(user_input, image_url):
+                    yield chunk
+                return
+            
+            # 使用LLM检测意图
+            is_image_request = self._detect_intent_with_llm(user_input)
+            
+            if is_image_request:
+                print("Image generation intent detected by LLM")
+                for chunk in self.generate_dalle_image_stream(user_input):
+                    yield chunk
+            else:
+                print("Text conversation intent detected")
+                for chunk in self.generate_massage_stream(user_input, model):
+                    yield chunk
+                    
+        except Exception as e:
+            print(f"Error in detect_intent_and_generate: {e}")
+            yield f"Error: {str(e)}"
 
     def _detect_intent_with_llm(self, user_input):
         """

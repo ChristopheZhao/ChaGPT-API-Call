@@ -5,3 +5,4 @@ Flask-RESTful==0.3.9
 requests==2.28.2
 tiktoken>=0.6.0
 PyYAML>=6.0
+python-dotenv>=1.0.0
