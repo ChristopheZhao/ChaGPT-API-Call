@@ -1,7 +1,13 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 config_dict = dict(
 
     Acess_config = dict(
-        authorization = "Your OpenAI API keys",
+        authorization = os.getenv("OPENAI_API_KEY", "your-api-key-here"),
     ),
 
     Model_config = dict(

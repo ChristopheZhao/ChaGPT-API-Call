@@ -1,5 +1,34 @@
+# IDE files
 ./.idea
 *.xml
 *.iml
-*.pycpython_api.py
+
+# Python files
 *.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# API keys and secrets
+config/api_keys.py
+config/secrets.py
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

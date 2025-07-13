@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, stream_with_context, request, send_from_directory
+from flask import Flask, Response, stream_with_context, request, send_from_directory
 from flask_cors import CORS
 import json
 import os
@@ -13,11 +13,12 @@ dialogue_api_hl = dialogue_api_handler()
 def request_openai():
     try:
         user_request_input = request.json.get('user_input')
-        print(f"Received request with input: {user_request_input}")
+        model = request.json.get('model', 'gpt-4o')  # 默认使用gpt-4o
+        print(f"Received request with input: {user_request_input}, model: {model}")
 
         def generate():
             try:
-                for chunk in dialogue_api_hl.generate_massage_stream(user_request_input):
+                for chunk in dialogue_api_hl.generate_massage_stream(user_request_input, model):
                     chunk_data = json.dumps({
                         'code': 0,
                         'message': 'success',
@@ -160,15 +161,16 @@ def request_smart():
     try:
         user_input = request.json.get('user_input')
         image_url = request.json.get('image_url')
+        model = request.json.get('model', 'gpt-4o')  # 默认使用gpt-4o
         
         if not user_input:
             return {'code': 1, 'message': 'Missing user_input'}, 400
 
-        print(f"Received smart request with input: {user_input}, image: {image_url}")
+        print(f"Received smart request with input: {user_input}, image: {image_url}, model: {model}")
 
         def generate():
             try:
-                for chunk in dialogue_api_hl.detect_intent_and_generate(user_input, image_url):
+                for chunk in dialogue_api_hl.detect_intent_and_generate(user_input, image_url, model):
                     chunk_data = json.dumps({
                         'code': 0,
                         'message': 'success',
@@ -226,7 +228,22 @@ def test_backgrounds():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return {
+        'name': 'ChatFlow API',
+        'version': '1.0.0',
+        'description': 'Modern AI Chat API with multimodal support',
+        'endpoints': {
+            'POST /request_openai': 'Standard OpenAI chat completion',
+            'POST /request_smart': 'Smart multimodal requests with auto intent detection',
+            'POST /speech_to_text': 'Speech recognition via Whisper',
+            'POST /text_to_speech': 'Text-to-speech generation',
+            'POST /text_to_speech_stream': 'Streaming text-to-speech'
+        },
+        'frontend': {
+            'development': 'cd frontend && npm run dev',
+            'production': 'cd frontend && npm run build && npm run preview'
+        }
+    }
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9200, debug=True)
