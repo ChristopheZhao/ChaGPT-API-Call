@@ -65,7 +65,7 @@ Open [http://127.0.0.1:9200/](http://127.0.0.1:9200/) in your browser.
   - Adjustable font sizes and spacing
   - Collapsible sidebar for better mobile experience
 
-![Web UI](https://github.com/user-attachments/assets/a60655c7-3e67-4d4c-ad8f-d1d797c2576b)
+![Web UI](https://github.com/user-attachments/assets/35258f09-b0fb-49cf-b4a5-d97e54ba0f09)
 
 ### Supported Models
 - **GPT-4o**: Most capable model, best for complex tasks (Vision support, 4k tokens)
